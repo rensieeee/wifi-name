@@ -1,15 +1,13 @@
 package wifiname
 
 import (
-	"io/ioutil"
+	"io"
 	"os/exec"
-	"regexp"
 	"runtime"
 	"strings"
 )
 
-const osxCmd = "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
-const osxArgs = "-I"
+const osxCmd = "networksetup -listpreferredwirelessnetworks en0 | sed -n '2 p' | tr -d '\t'"
 const linuxCmd = "iwgetid"
 const linuxArgs = "--raw"
 
@@ -36,10 +34,10 @@ func forLinux() string {
 		panic(err)
 	}
 	defer cmd.Wait()
-	
+
 	var str string
 
-	if b, err := ioutil.ReadAll(stdout); err == nil {
+	if b, err := io.ReadAll(stdout); err == nil {
 		str += (string(b) + "\n")
 	}
 
@@ -48,8 +46,7 @@ func forLinux() string {
 }
 
 func forOSX() string {
-
-	cmd := exec.Command(osxCmd, osxArgs)
+	cmd := exec.Command("bash", "-c", osxCmd)
 
 	stdout, err := cmd.StdoutPipe()
 	panicIf(err)
@@ -59,21 +56,13 @@ func forOSX() string {
 		panic(err)
 	}
 	defer cmd.Wait()
+
 	var str string
-
-	if b, err := ioutil.ReadAll(stdout); err == nil {
-		str += (string(b) + "\n")
+	if b, err := io.ReadAll(stdout); err == nil {
+		str = string(b)
 	}
 
-	r := regexp.MustCompile(`s*SSID: (.+)s*`)
-
-	name := r.FindAllStringSubmatch(str, -1)
-
-	if len(name) <= 1 {
-		return "Could not get SSID"
-	} else {
-		return name[1][1]
-	}
+	return strings.TrimSpace(str)
 }
 
 func panicIf(err error) {

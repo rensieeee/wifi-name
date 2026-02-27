@@ -5,7 +5,7 @@ Get current wifi name
 ### Install
 
 ```
-$ go get github.com/yelinaung/wifi-name
+$ go get github.com/rensieeee/wifi-name
 ```
 
 ### Example
@@ -15,7 +15,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/yelinaung/wifi-name"
+	"github.com/rensieeee/wifi-name"
 )
 
 func main() {
